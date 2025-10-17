@@ -1,0 +1,135 @@
+####################################
+# The following are general settings
+####################################
+
+# Experiment name, more details in Section 'Experiment Name Explanation'
+# NAME: my_PELearn_Diff_Latent1_MEncDec49_MdiffEnc49_bs64_clip_uncond75_01
+NAME: difusion_diffusion_2AFS
+# NAME: most4_finetune_T2M05_trip1_1225
+# Debug mode. Set to True will enter the debug mode, then the program will
+# 1. use a tiny dataset for trianing and evaluation
+# 2. validate more intensively
+# 3. will not use `wandb logger`
+DEBUG: False
+VISUALIZE: False
+# Devices. Optional: “cpu”, “gpu”
+ACCELERATOR: 'gpu'
+# Index of GPUs eg. [0] or [0,1,2,3]
+DEVICE: [0,1]
+
+#####################################
+# The following are training settings
+#####################################
+TRAIN:
+  # Model stage. Optional: "vae", "diffusion"
+  STAGE: diffusion
+  DO_FORWARD: True
+  # Training dataset name
+  DATASETS: ['difusion']
+  # Number of dataloader workers
+  NUM_WORKERS: 1
+  # Size of batches
+  BATCH_SIZE: 32 # single: 64
+  # Total epochs for training
+  END_EPOCH: 1 # 继续finetune到
+  # Resume
+  RESUME: './experiments/difusion/difusion_diffusion_1KDS' # Resume training from this path
+  # START_EPOCH: 2999
+  PRETRAINED_CLASSIFIER: 'checkpoints/style_classifier_100styles.ckpt'
+  OPTIM:
+    TYPE: AdamW # Optimizer type
+    LR: 1e-4 # Learning rate
+  # Ablation study configurations.
+  ABLATION:
+    SKIP_CONNECT: True
+    PE_TYPE: mld
+    DIFF_PE_TYPE: mld
+    CONDITIONS_MIX: concat # cross_attn
+
+#####################################
+# The following are validation settings
+#####################################
+EVAL:
+  DATASETS: ['difusion'] # Evaluating datasets
+  BATCH_SIZE: 256 # Evaluating Batch size
+  SPLIT: test
+
+#####################################
+# The following are testing settings
+#####################################
+TEST:
+  CHECKPOINTS: ./checkpoints/difusion_100styles_best.ckpt # Pretrained model path
+  DATASETS: ['difusion'] # training datasets
+  SPLIT: test
+  BATCH_SIZE: 512 # training Batch size
+  MEAN: False
+  NUM_SAMPLES: 1
+  FACT: 1
+  REPLICATION_TIMES: 5
+
+TESTSET1:
+  DATASETS: ['difusion']
+  NUM_STYLES: 100
+
+#####################################
+# The following are basic datasets settings
+#####################################
+DATASET:
+  JOINT_TYPE: 'humanml3d' # join type
+
+#####################################
+# The following are metric settings
+#####################################
+METRIC:
+  TYPE: []
+  Classify_topk: 1
+
+#####################################
+# The following are training losses settings
+#####################################
+LOSS:
+  TYPE: difusion # Losses type
+  LAMBDA_LATENT: 1.0e-5 # Lambda for latent Losses
+  LAMBDA_KL: 1.0e-4 # Lambda for kl Losses
+  LAMBDA_REC: 1.0 # Lambda for reconstruction Losses
+  LAMBDA_GEN: 1.0 # Lambda for text-motion generation losses
+  LAMBDA_CROSS: 1.0 # Lambda for reconstruction Losses
+  LAMBDA_CYCLE: 0.0 # Lambda for cycle Losses
+  LAMBDA_PRIOR: 0.0
+  LAMBDA_DENOISE: 0.0
+  TM_ALIGNMENT_TYPE: T2M
+  LAMBDA_TEXTALIGN: 0.5 # 效果最好！！
+  LAMBDA_CLASSIFY: 0.05 # ！
+  DIST_SYNC_ON_STEP: False # Sync Losses on step when distributed trained
+
+#####################################
+# The following are basic model settings
+#####################################
+model:
+  vae: true # whether vae model
+  vae_type: mld
+  model_type: difusion # model type
+  # condition: 'text_style'
+  condition: 'text_stylelabel'
+  num_styles: 100
+  latent_dim: [1, 256] # latent dimension
+  ff_size: 1024 #
+  num_layers: 9 # number of layers
+  num_head: 4 # number of head layers
+  droupout: 0.1 # dropout rate
+  activation: gelu # activation type
+  guidance_scale: 7.5 #
+  guidance_uncondp: 0.1 # 0.1 0.25
+
+#####################################
+# The following are loggers settings
+#####################################
+LOGGER:
+  SAVE_CHECKPOINT_EPOCH: 1
+  LOG_EVERY_STEPS: 1
+  VAL_EVERY_STEPS: 200
+  TENSORBOARD: True
+  WANDB:
+    PROJECT: null
+    OFFLINE: False
+    RESUME_ID: null

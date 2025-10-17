@@ -1,0 +1,11 @@
+experiments/
+results/
+checkpoints/
+deps/
+__pycache__/
+*.rar
+*.txt
+!demo/*.txt
+*.out
+*.pkl
+!my.sh

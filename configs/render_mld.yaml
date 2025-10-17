@@ -1,0 +1,22 @@
+NAME: '___render_do_not_need_name__' # Experiment name
+ACCELERATOR: 'gpu' # Devices optioncal: “cpu”, “gpu”, “tpu”, “ipu”, “hpu”, “mps, “auto”
+DEVICE: [0] # Index of gpus eg. [0] or [0,1,2,3]
+
+RENDER:
+  FOLDER: '___no_need__'
+  JOINT_TYPE: 'HumanML3D'
+  INPUT_MODE: 'npy'
+  DIR: ''
+  NPY: '___no_need__'
+  DENOISING: True
+  OLDRENDER: True
+  RES: 'high'
+  # RES: 'interpolation'
+  DOWNSAMPLE: False
+  FPS: 20 # 20.0 # 12.5
+  CANONICALIZE: True
+  EXACT_FRAME: 0.5
+  NUM: 6
+  MODE: '___no_need__' #sequence frame video
+  VID_EXT: 'mp4'
+  FACES_PATH: '/nfs/Motion/Motion_Synthesis/motion-latent-diffusion/deps/smpl_models/smplh/smplh.faces'

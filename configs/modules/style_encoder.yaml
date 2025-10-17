@@ -1,0 +1,8 @@
+style_encoder:
+  target: mld.models.architectures.aberman_styleenc.EncoderStyle
+  params:
+    pos3d_channels: 263
+    enc_cl_channels: [0, 144, 256]
+    enc_cl_down_n: 2
+    enc_cl_kernel_size: 8
+    enc_cl_stride: 2

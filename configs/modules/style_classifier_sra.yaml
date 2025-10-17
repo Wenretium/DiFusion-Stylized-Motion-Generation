@@ -1,0 +1,11 @@
+# style_classifier_sra:
+#   target: mld.models.architectures.style_classifier.StyleClassifier
+#   params:
+#     input_dim: 263
+#     latent_dim: 256
+#     ff_size: 1024
+#     num_heads: 4
+#     dropout: 0.1
+#     activation: "gelu"
+#     num_classes: ${TESTSET1.NUM_STYLES_SRA}
+    

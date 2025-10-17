@@ -1,0 +1,15 @@
+a person kicks with his left leg.#50
+A person is skipping rope.#100
+a person walks backward slowly.#100
+a person runs forward.#80
+a person jumps forward.#50
+a person jumps sideways to the left.#80
+A person is walking up the stairs.#100
+A person is punching forward.#50
+a person is dancing.#150
+a person is playing basketball.#150
+A person is doing squats.#80
+A person is crawling on the ground.#120
+A person is doing cartwheels.#120
+A person walks forward, and then sits down.#150
+A person sits down and then stands up.#100

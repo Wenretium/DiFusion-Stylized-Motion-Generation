@@ -1,0 +1,92 @@
+NAME: difusion_vae # Experiment name
+DEBUG: False # Debug mode
+ACCELERATOR: 'gpu' # Devices optioncal: “cpu”, “gpu”, “tpu”, “ipu”, “hpu”, “mps, “auto”
+DEVICE: [0] # Index of gpus eg. [0] or [0,1,2,3]
+
+# Training configuration
+TRAIN:
+  #---------------------------------
+  STAGE: vae # stage "vae" or "diffusion", "vae_diffusion"
+  #---------------------------------
+  ABLATION:
+    SKIP_CONNECT: True
+    PE_TYPE: mld
+    DIFF_PE_TYPE: mld
+    CONDITIONS_MIX: concat
+  DATASETS: ['difusion'] # Training datasets
+  NUM_WORKERS: 4 # Number of workers
+  BATCH_SIZE: 32 # Size of batches
+  START_EPOCH: 0 # Start epoch
+  END_EPOCH: 3000 # End epoch
+  RESUME: '' # Resume training from this path
+  PRETRAINED_VAE: ''
+  PRETRAINED_CLASSIFIER: ''
+  OPTIM:
+    TYPE: AdamW # Optimizer type
+    LR: 1e-4 # Learning rate
+  DO_FORWARD: False
+
+# Evaluating Configuration
+EVAL:
+  DATASETS: ['difusion'] # Evaluating datasets
+  BATCH_SIZE: 32 # Evaluating Batch size
+  SPLIT: test
+
+# Test Configuration
+TEST:
+  CHECKPOINTS: './experiments/difusion/difusion_vae/checkpoints/epoch=2999.ckpt' # Pretrained model path
+  DATASETS: ['difusion'] # training datasets
+  SPLIT: test
+  BATCH_SIZE: 64 # training Batch size
+  MEAN: False
+  NUM_SAMPLES: 1
+  FACT: 1
+
+TESTSET1:
+  DATASETS: ['difusion']
+  NUM_STYLES: 100
+
+# Datasets Configuration
+DATASET:
+  JOINT_TYPE: 'humanml3d' # join type
+METRIC:
+  TYPE: ['ReconMetrics']
+# Losses Configuration
+LOSS:
+  TYPE: difusion # Losses type
+  LAMBDA_LATENT: 1.0e-5 # Lambda for latent Losses
+  LAMBDA_KL: 1.0e-4 # Lambda for kl Losses
+  LAMBDA_REC: 1.0 # Lambda for reconstruction Losses
+  LAMBDA_GEN: 0.0 # Lambda for text-motion generation losses
+  LAMBDA_CROSS: 1.0 # Lambda for reconstruction Losses
+  LAMBDA_CYCLE: 0.0 # Lambda for cycle Losses
+  LAMBDA_PRIOR: 0.0
+  TM_ALIGNMENT_TYPE: T2M
+  DIST_SYNC_ON_STEP: False # Sync Losses on step when distributed trained
+
+# Model Configuration
+model:
+  vae: true # whether vae model
+  vae_type: mld # model type
+  model_type: difusion # model type
+  condition: 'text_stylelabel'
+  num_styles: 100
+  latent_dim: [1, 256] # latent dimension
+  ff_size: 1024 #
+  num_layers: 9 # number of layers
+  num_head: 4 # number of head layers
+  droupout: 0.1 # dropout rate
+  activation: gelu # activation type
+  guidance_scale: 7.5 #
+  guidance_uncondp: 0.1 # 0.1 0.25
+
+# Logger configuration
+LOGGER:
+  SAVE_CHECKPOINT_EPOCH: 200
+  LOG_EVERY_STEPS: 1
+  VAL_EVERY_STEPS: 200
+  TENSORBOARD: True
+  WANDB:
+    PROJECT: null
+    OFFLINE: False
+    RESUME_ID: null
