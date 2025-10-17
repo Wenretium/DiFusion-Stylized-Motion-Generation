@@ -48,22 +48,22 @@ def main():
         style_name1 = cfg.DEMO.STYLE1
         style_name2 = cfg.DEMO.STYLE2
 
-    if cfg.DEMO.EXAMPLE:
-        # Check txt file input
-        # load txt
-        from mld.utils.demo_utils import load_example_input
-        text, length = load_example_input(cfg.DEMO.EXAMPLE)
-    else:
-        # keyborad input
-        task = "textstyle2motion"
-        text = input("Please enter texts, none for random latent sampling:")
-        length = input(
-            "Please enter length, range 16~196, e.g. 50, none for random latent sampling:"
-        )
-        # default lengths
-        length = 200 if not length else length
-        length = [int(length)]
-        text = [text]
+    if task == 'textstyle2motion':
+        if cfg.DEMO.EXAMPLE:
+            # Check txt file input
+            # load txt
+            from mld.utils.demo_utils import load_example_input
+            text, length = load_example_input(cfg.DEMO.EXAMPLE)
+        else:
+            # keyborad input
+            text = input("Please enter texts, none for random latent sampling:")
+            length = input(
+                "Please enter length, range 16~196, e.g. 50, none for random latent sampling:"
+            )
+            # default lengths
+            length = 200 if not length else length
+            length = [int(length)]
+            text = [text]
 
     # cuda options
     if cfg.ACCELERATOR == "gpu":
@@ -110,22 +110,8 @@ def main():
         rep_ref_lst = []
         texts_lst = []
         # batch
-        if task == "reconstrucion":
-            motions = ['./results/most/most4_finetune_T2M001/2400_ArmsFolded+text/ArmsFolded+a_person_is_dancing_rep0.npy']
-            mean = np.load('./deps/t2m/hm_style100/Mean.npy')
-            std = np.load('./deps/t2m/hm_style100/Std.npy')
-            for id, motion in enumerate(motions):
-                motion = np.load(motion)
-                length = [len(motion)]
-                motion = (motion - mean) / std
-                motion = torch.from_numpy(motion).to(torch.float32).to(device)
-                motion = motion.unsqueeze(0)
-                batch = {"motion": motion, "length": length}
-                joints, joints_ref = model.recon_from_motion(batch)
 
-            new_folder = "{}_{}_{}".format(epoch_num, 'recon')
-
-        elif task == 'textstyle2motion':
+        if task == 'textstyle2motion':
             # with style
             condition = cfg.condition
             assert condition in ['text_stylelabel'], 'only support text+stylelabel condition in our released project for simplicity.'
@@ -193,12 +179,39 @@ def main():
             }
             new_folder = "{}_{}".format(epoch_num, 'random_sampling')
 
+        elif task == "reconstruction":
+            joints = []
+            length = []
+            motions = [text_motion_dir + '/000000.npy',text_motion_dir + '/000200.npy']
+            mean = np.load('./deps/t2m/hm_style100/Mean.npy')
+            std = np.load('./deps/t2m/hm_style100/Std.npy')
+            for _, motion in enumerate(motions):
+                motion = np.load(motion)
+                leng = len(motion)
+                motion = (motion - mean) / std
+                motion = torch.from_numpy(motion).to(torch.float32).to(device)
+                motion = motion.unsqueeze(0)
+                batch = {"motion": motion, "length": [leng]}
+                jots, _ = model.recon_from_motion(batch)
+                joints.extend(jots)
+                length.append(leng)
+
+            batch["text"] = ["reconstruction"] * len(joints)
+            new_folder = "{}_{}".format(epoch_num, 'recon')
+
+        else:
+            raise ValueError(
+                f"Not support task {task}, only support random_sampling, reconstruction, text+style2motion"
+            )
+
         output_dir = Path(os.path.join(cfg.FOLDER, str(cfg.model.model_type), str(cfg.NAME), new_folder))
         output_dir.mkdir(parents=True, exist_ok=True)
 
         for rep in range(cfg.DEMO.REPLICATION):
             if task == 'random_sampling':
                 joints = model.gen_from_latent(batch)
+            elif task == 'reconstruction':
+                pass
             else:
                 # conditioned motion synthesis
                 joints = model(batch)
@@ -213,6 +226,8 @@ def main():
             for i in range(nsample):
                 if task == "random_sampling":
                     motion_name = f"random_sampling_{length}_{i}"
+                elif task == "reconstruction":
+                    motion_name = f"recon_{length[i]}_{i}"
                 elif task == "interpolate":
                     motion_name = f"{style_name1}-{alpha}-{style_name2}+{text[i].replace(' ', '_').replace('.', '')}"
                 else:
@@ -226,11 +241,6 @@ def main():
             rep_lst.append(joints)
             texts_lst.append(batch["text"])
                     
-
-        if task not in ['random_sampling', 'reconstrucion', 'textstyle2motion', 'interpolate']:
-            raise ValueError(
-                f"Not support task {task}, only support random_sampling, reconstrucion, text+style2motion"
-            )
 
         total_time = time.time() - total_time
         print(f'MLD Infer time - This/Ave batch: {infer_time/num_batch:.3f}')
@@ -255,6 +265,12 @@ def main():
                         f"random_sampling_{length}_{i}.npy"
                 fig_path = Path(str(npypath).replace(".npy",".mp4"))
                 plot_3d_motion(fig_path, paramUtil.t2m_kinematic_chain, joints[i].detach().cpu().numpy(), title="random_sampling", fps=cfg.DEMO.FRAME_RATE)
+        elif task == "reconstruction":
+            for i in range(nsample):
+                npypath = output_dir / \
+                        f"recon_{length[i]}_{i}.npy"
+                fig_path = Path(str(npypath).replace(".npy",".mp4"))
+                plot_3d_motion(fig_path, paramUtil.t2m_kinematic_chain, joints[i].detach().cpu().numpy(), title="reconstruction", fps=cfg.DEMO.FRAME_RATE)
         elif task == "interpolate":
             for i in range(nsample):
                 for rep in range(cfg.DEMO.REPLICATION):
