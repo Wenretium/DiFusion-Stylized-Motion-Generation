@@ -11,7 +11,7 @@ We propose DiFusion, a framework for diversely **stylized motion generation**. I
 ## 🚩 News
 - [2025/10/17] first release, code for both training, evaluation and demo
 
-## ⚡ Quick Start
+## ⚙️ Setup
   
 ### 1. Conda environment
 
@@ -48,7 +48,7 @@ bash prepare/download_pretrained_models.sh
 
 </details>
 
-## ▶️ Demo
+## 🚀 Demo
 
 We support text file or keyboard input, the generated motions are npy files.
 Please check the `configs/asset.yaml` for path config, TEST.FOLDER as output folder.
@@ -184,12 +184,8 @@ python -m test --cfg configs/bfa/config_difu_diffusion_2AFS.yaml --cfg_assets co
 ```
 
 
-</details>
-
 ## 👀 Visualization
 
-<details>
-  <summary><b>Render SMPL</b></summary>
 
 ### 1. Set up blender - WIP
 

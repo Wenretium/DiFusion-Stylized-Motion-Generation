@@ -8,4 +8,5 @@ __pycache__/
 !demo/*.txt
 *.out
 *.pkl
-!my.sh
+my.sh
+!requirements.txt
